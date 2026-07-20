@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+GPU_ID=${1:-0}
+export CUDA_VISIBLE_DEVICES=$GPU_ID
+echo "Using GPU: $GPU_ID"
+
 BASE_DIR="/data/nas07_new/PersonalData/robit/Mammo-CLIP"
 CODE_DIR="${BASE_DIR}/src/codebase"
 

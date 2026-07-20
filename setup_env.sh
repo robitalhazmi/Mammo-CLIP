@@ -4,7 +4,7 @@ set -e
 echo "Setting up Mammo-CLIP Conda Environment..."
 
 # Use the existing environment.yml to create the environment
-conda env create -f /home/robit/Documents/Project/Mammo-CLIP/environment.yml -n mammo-clip || echo "Environment might already exist"
+conda env create -f /data/nas07_new/PersonalData/robit/Mammo-CLIP/environment.yml -n mammo-clip || echo "Environment might already exist"
 
 # Activate the environment (need to use source for bash scripts)
 source "$(conda info --base)/etc/profile.d/conda.sh"

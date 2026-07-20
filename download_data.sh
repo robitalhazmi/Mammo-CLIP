@@ -2,7 +2,7 @@
 set -e
 
 BASE_DIR="/data/nas07_new/PersonalData/robit/Mammo-CLIP"
-REPO_DIR="/home/robit/Documents/Project/Mammo-CLIP"
+REPO_DIR="/data/nas07_new/PersonalData/robit/Mammo-CLIP"
 
 echo "Creating directory structure at ${BASE_DIR}..."
 mkdir -p "${BASE_DIR}/data/vindr/images_png"

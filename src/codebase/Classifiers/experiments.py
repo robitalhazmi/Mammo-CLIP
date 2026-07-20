@@ -133,6 +133,10 @@ def train_loop(args, device):
         scaler = torch.cuda.amp.GradScaler()
 
     model = model.to(device)
+    if torch.cuda.device_count() > 1:
+        print(f"Let's use {torch.cuda.device_count()} GPUs!")
+        model = torch.nn.DataParallel(model)
+
     print(model)
 
     logger = SummaryWriter(args.tb_logs_path / f'fold{args.cur_fold}')
@@ -192,7 +196,7 @@ def train_loop(args, device):
                 print(f'Epoch {epoch + 1} - Save Best acc: {best_acc * 100:.4f} Model')
                 torch.save(
                     {
-                        'model': model.state_dict(),
+                        'model': model.module.state_dict() if isinstance(model, torch.nn.DataParallel) else model.state_dict(),
                         'predictions': predictions,
                         'epoch': epoch,
                         'accuracy': accuracy,
@@ -212,14 +216,12 @@ def train_loop(args, device):
                 best_aucroc = aucroc
                 model_name = f'{args.model_base_name}_seed_{args.seed}_fold{args.cur_fold}_best_aucroc_ver{args.VER}.pth'
                 print(f'Epoch {epoch + 1} - Save aucroc: {best_aucroc:.4f} Model')
-                torch.save(
-                    {
-                        'model': model.state_dict(),
-                        'predictions': predictions,
-                        'epoch': epoch,
-                        'auroc': aucroc,
-                    }, args.chk_pt_path / model_name
-                )
+                torch.save({
+                    'model': model.module.state_dict() if isinstance(model, torch.nn.DataParallel) else model.state_dict(),
+                    'predictions': predictions,
+                    'epoch': epoch,
+                    'auroc': aucroc,
+                }, args.chk_pt_path / model_name)
 
         if args.label.lower() == "density" or args.label.lower() == "birads":
             model_name = f'{args.model_base_name}_seed_{args.seed}_fold{args.cur_fold}_best_acc_cancer_ver{args.VER}.pth'

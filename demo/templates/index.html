@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prompt-Guided MV VLM Interactive Demo</title>
+    <meta name="description" content="Interactive demo for Prompt-Guided MV VLM: Mammogram Classification with Prompt-Guided Multi-View Vision Language Model">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <header class="sidebar-header">
+                <div class="logo">
+                    <span class="icon">🔬</span>
+                    <h1 class="gradient-text">Prompt-Guided MV VLM</h1>
+                </div>
+                <p class="subtitle">Mammogram Classification with Prompt-Guided Multi-View Vision Language Model</p>
+                <div class="device-status" id="deviceStatus">
+                    <span class="status-indicator"></span>
+                    <span id="deviceText">Checking system...</span>
+                </div>
+            </header>
+
+            <div class="sidebar-content">
+                <!-- Model Selection -->
+                <section class="control-group">
+                    <h2>Model Selection</h2>
+                    <div class="radio-cards" id="modelGroup">
+                        <label class="radio-card">
+                            <input type="radio" name="model" value="en_b5" checked>
+                            <div class="card-content">
+                                <span class="card-title">EN-B5</span>
+                                <span class="tag">Prompt-Guided MV VLM</span>
+                            </div>
+                        </label>
+                    </div>
+                </section>
+
+                <!-- Label Selection -->
+                <section class="control-group">
+                    <h2>Target Label</h2>
+                    <div class="pill-group" id="labelGroup">
+                        <label class="pill">
+                            <input type="radio" name="label" value="mass">
+                            <span>Mass</span>
+                        </label>
+                        <label class="pill">
+                            <input type="radio" name="label" value="calcification">
+                            <span>Calcification</span>
+                        </label>
+                        <label class="pill">
+                            <input type="radio" name="label" value="malignancy">
+                            <span>Malignancy</span>
+                        </label>
+                    </div>
+                </section>
+
+                <!-- Setting Selection -->
+                <section class="control-group">
+                    <h2>Evaluation Setting</h2>
+                    <div class="radio-cards" id="settingGroup">
+                        <label class="radio-card" title="Zero-shot evaluation with text prompts">
+                            <input type="radio" name="setting" value="zero_shot">
+                            <div class="card-content">
+                                <span class="card-title">Zero-shot</span>
+                            </div>
+                        </label>
+                        <label class="radio-card" id="linearProbeCard" title="Linear probe (Requires EN-B5)">
+                            <input type="radio" name="setting" value="linear_probe">
+                            <div class="card-content">
+                                <span class="card-title">Linear Probe</span>
+                            </div>
+                        </label>
+                    </div>
+                </section>
+
+                <!-- Text Prompts -->
+                <section class="control-group hidden" id="promptsSection">
+                    <div class="group-header">
+                        <h2>Text Prompts</h2>
+                        <button type="button" class="btn-text" id="resetPromptsBtn">Reset to Default</button>
+                    </div>
+                    <div id="promptInputsContainer">
+                        <!-- Dynamically populated -->
+                    </div>
+                </section>
+
+                <!-- Image Selection -->
+                <section class="control-group">
+                    <h2>Input Mammogram</h2>
+                    
+                    <div class="dropdown-container">
+                        <label for="sampleImages">Sample Images</label>
+                        <select id="sampleImages" class="styled-select">
+                            <option value="">-- Select a sample image --</option>
+                            <!-- Dynamically populated -->
+                        </select>
+                    </div>
+
+                    <div class="divider"><span>OR</span></div>
+
+                    <div class="upload-zone" id="uploadZone">
+                        <input type="file" id="fileInput" accept=".png, .jpg, .jpeg, .dicom, image/png, image/jpeg, application/dicom" hidden>
+                        <div class="upload-content">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="upload-icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                            <p>Drag & drop image here or <strong>click to browse</strong></p>
+                        </div>
+                    </div>
+                    
+                    <div class="preview-container hidden" id="previewContainer">
+                        <img id="imagePreviewSmall" src="" alt="Selected image preview">
+                        <button type="button" class="btn-icon" id="clearImageBtn" title="Clear image">×</button>
+                    </div>
+                </section>
+
+            </div>
+            
+            <div class="sidebar-footer">
+                <button type="button" class="btn-primary" id="runBtn" disabled>
+                    <span class="btn-text">Run Analysis</span>
+                    <div class="spinner hidden" id="runSpinner"></div>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="top-bar">
+                <div class="breadcrumb" id="breadcrumb">
+                    Model <span class="separator">></span> Label <span class="separator">></span> Setting
+                </div>
+            </div>
+
+            <div class="scrollable-content">
+                <!-- Empty State -->
+                <div class="empty-state" id="emptyState">
+                    <div class="empty-icon">🔬</div>
+                    <h2>Ready for Analysis</h2>
+                    <p>Select a model, label, setting, and upload an image to begin.</p>
+                </div>
+
+                <!-- Results View (Hidden initially) -->
+                <div class="results-view hidden" id="resultsView">
+                    
+                    <!-- Prediction Results -->
+                    <section class="glass-card result-summary">
+                        <h2>Prediction Summary</h2>
+                        <div class="summary-content" id="predictionSummary">
+                            <!-- Dynamically populated -->
+                        </div>
+                    </section>
+
+                    <!-- Image Display -->
+                    <section class="image-panels">
+                        <div class="glass-card panel">
+                            <h2>Original Mammogram</h2>
+                            <div class="image-wrapper">
+                                <img id="originalImage" src="" alt="Original Mammogram">
+                            </div>
+                        </div>
+                        <div class="glass-card panel">
+                            <h2>Grad-CAM Highlight</h2>
+                            <div class="image-wrapper">
+                                <img id="heatmapImage" src="" alt="Heatmap Overlay">
+                            </div>
+                        </div>
+                    </section>
+
+
+                </div>
+            </div>
+
+            <footer class="main-footer">
+                <div class="metadata" id="metadataFooter">
+                    <!-- Inference info -->
+                </div>
+
+            </footer>
+        </main>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

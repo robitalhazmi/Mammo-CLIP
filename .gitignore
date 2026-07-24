@@ -1,0 +1,26 @@
+__pycache__/
+*.pyc
+
+# Dataset and Checkpoints
+data/
+checkpoints/
+outputs/
+results/
+logs/
+demo/checkpoints/
+
+# Node modules
+node_modules/
+demo/node_modules/
+
+# Logs and temp files
+*.log
+*.pid
+demo/*.log
+demo/*.pid
+demo/response.json
+
+# Test scripts
+demo/test_*.py
+demo/evaluate_*.py
+download_two.py

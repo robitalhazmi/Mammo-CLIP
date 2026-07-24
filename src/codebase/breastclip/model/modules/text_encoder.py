@@ -22,6 +22,7 @@ class HuggingfaceTextEncoder(nn.Module):
                 cache_dir=cache_dir,
                 local_files_only=local_files_only,
                 trust_remote_code=trust_remote_code,
+                use_safetensors=False,
             )
         else:
             # initializing with a config file does not load the weights associated with the model

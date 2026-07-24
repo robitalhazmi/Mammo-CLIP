@@ -1,13 +1,13 @@
-# Mammo-CLIP Demo
+# Prompt-Guided MV VLM Demo
 
-An interactive, web-based demonstration for **Mammo-CLIP**, a vision-language model tailored for mammogram analysis. This demo allows users to evaluate the model's capabilities in finding specific breast abnormalities (like Masses or Calcifications) using Zero-Shot Prediction and Linear Probing. 
+An interactive, web-based demonstration for **Prompt-Guided MV VLM**, a vision-language model tailored for mammogram analysis. This demo allows users to evaluate the model's capabilities in finding specific breast abnormalities (like Masses or Calcifications) using Zero-Shot Prediction and Linear Probing. 
 
 The application features an intuitive UI that generates **Grad-CAM heatmaps** to visualize exactly where the model is focusing, alongside ground-truth bounding boxes for accurate performance evaluation.
 
 ## Features
 
-- **Prompt-Guided MV VLM (Zero-Shot)**: Leverage the power of Mammo-CLIP's vision-language embeddings to perform zero-shot classification using custom text prompts.
-- **Linear Probe**: Evaluate task-specific performance using pre-trained linear classifiers fine-tuned on Mammo-CLIP embeddings.
+- **Prompt-Guided MV VLM (Zero-Shot)**: Leverage the power of Prompt-Guided MV VLM's vision-language embeddings to perform zero-shot classification using custom text prompts.
+- **Linear Probe**: Evaluate task-specific performance using pre-trained linear classifiers fine-tuned on Prompt-Guided MV VLM embeddings.
 - **Grad-CAM Interpretability**: Automatically generates heatmaps overlaid on the original mammograms, showing the regions that most strongly influenced the model's prediction.
 - **Ground Truth Validation**: Displays ground-truth bounding boxes perfectly aligned with the model's heatmaps, utilizing dynamic cropping and coordinate mapping from the VinDr metadata.
 - **Dynamic Preprocessing**: Automatically isolates the Breast Region of Interest (ROI) and normalizes uploaded or sampled images before inference.

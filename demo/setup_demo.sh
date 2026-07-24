@@ -24,14 +24,12 @@ echo "  Done."
 # -----------------------------------------------
 echo ""
 echo "[2/5] Setting up Kaggle credentials..."
-KAGGLE_JSON="/home/robit/Downloads/kaggle.json"
-if [ -f "$KAGGLE_JSON" ]; then
-    mkdir -p ~/.kaggle
-    cp "$KAGGLE_JSON" ~/.kaggle/kaggle.json
+if [ ! -f ~/.kaggle/kaggle.json ]; then
+    echo "  WARNING: ~/.kaggle/kaggle.json not found."
+    echo "  Please download your kaggle.json and place it in ~/.kaggle/ to download the VinDr dataset."
+else
     chmod 600 ~/.kaggle/kaggle.json
     echo "  Kaggle credentials configured."
-else
-    echo "  WARNING: $KAGGLE_JSON not found. Kaggle downloads may fail."
 fi
 
 # -----------------------------------------------

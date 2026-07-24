@@ -3,7 +3,7 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CHECKPOINT_DIR = os.path.join(BASE_DIR, "checkpoints")
 SAMPLE_IMAGES_DIR = os.path.join(BASE_DIR, "static", "sample_images")
-MAMMO_CLIP_SRC_DIR = "/home/robit/Documents/Project/Mammo-CLIP/src/codebase"
+MAMMO_CLIP_SRC_DIR = os.path.join(os.path.dirname(BASE_DIR), "src", "codebase")
 
 IMAGE_SIZE = (1520, 912)
 MEAN = 0.3089279

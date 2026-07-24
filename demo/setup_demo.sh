@@ -72,43 +72,32 @@ DOWNSTREAM_DIR="checkpoints/downstream/classifier"
 # https://huggingface.co/shawn24/Mammo-CLIP/tree/main/Downstream-checkpoints
 # They include fold 0 checkpoints for LP and FT with EN-B5
 
-# List of downstream checkpoint files to download
-# Format: <local_subdir>/<filename> <HF_path>
-declare -A DOWNSTREAM_CKPTS=(
-    # Mass - Linear Probe
-    ["mass/breast_clip_det_b5_period_n_lp_seed_0_fold0_best_aucroc_ver001.pth"]="Downstream-checkpoints/Classifier-checkpoints/VinDr/Mass/Linear-Probe/breast_clip_det_b5_period_n_lp_seed_0_fold0_best_aucroc_ver001.pth"
-    # Mass - Finetune
-    ["mass/breast_clip_det_b5_period_n_ft_seed_0_fold0_best_aucroc_ver001.pth"]="Downstream-checkpoints/Classifier-checkpoints/VinDr/Mass/Finetune/breast_clip_det_b5_period_n_ft_seed_0_fold0_best_aucroc_ver001.pth"
-    # Calcification - Linear Probe
-    ["calcification/breast_clip_det_b5_period_n_lp_seed_0_fold0_best_aucroc_ver001.pth"]="Downstream-checkpoints/Classifier-checkpoints/VinDr/Suspicious_Calcification/Linear-Probe/breast_clip_det_b5_period_n_lp_seed_0_fold0_best_aucroc_ver001.pth"
-    # Calcification - Finetune
-    ["calcification/breast_clip_det_b5_period_n_ft_seed_0_fold0_best_aucroc_ver001.pth"]="Downstream-checkpoints/Classifier-checkpoints/VinDr/Suspicious_Calcification/Finetune/breast_clip_det_b5_period_n_ft_seed_0_fold0_best_aucroc_ver001.pth"
-    # Density - Linear Probe
-    ["density/breast_clip_det_b5_period_n_lp_seed_0_fold0_best_acc_cancer_ver001.pth"]="Downstream-checkpoints/Classifier-checkpoints/VinDr/density/Linear-Probe/breast_clip_det_b5_period_n_lp_seed_0_fold0_best_acc_cancer_ver001.pth"
-    # Density - Finetune
-    ["density/breast_clip_det_b5_period_n_ft_seed_0_fold0_best_acc_cancer_ver001.pth"]="Downstream-checkpoints/Classifier-checkpoints/VinDr/density/Finetune/breast_clip_det_b5_period_n_ft_seed_0_fold0_best_acc_cancer_ver001.pth"
-)
+#echo "  Downloading Downstream checkpoints zip (this may take a while)..."
+ZIP_URL="https://huggingface.co/shawn24/Mammo-CLIP/resolve/main/Downstream-checkpoints/Downstream_evalualtion_b5_fold0.zip"
+ZIP_PATH="$DOWNSTREAM_DIR/Downstream_evalualtion_b5_fold0.zip"
 
-HF_BASE="https://huggingface.co/shawn24/Mammo-CLIP/resolve/main"
-
-for local_path in "${!DOWNSTREAM_CKPTS[@]}"; do
-    full_local="$DOWNSTREAM_DIR/$local_path"
-    hf_path="${DOWNSTREAM_CKPTS[$local_path]}"
+if [ ! -d "$DOWNSTREAM_DIR/mass" ] || [ -z "$(ls -A $DOWNSTREAM_DIR/mass 2>/dev/null)" ]; then
+    echo "  Downloading Downstream checkpoints zip (this may take a while)..."
+    wget -q --show-progress -O "$ZIP_PATH" "$ZIP_URL"
+    echo "  Extracting..."
+    unzip -q -o "$ZIP_PATH" -d "$DOWNSTREAM_DIR/"
+    unzip -q -o "$DOWNSTREAM_DIR/classification/Models.zip" -d "$DOWNSTREAM_DIR/"
     
-    # Create subdirectory
-    mkdir -p "$(dirname "$full_local")"
+    mkdir -p "$DOWNSTREAM_DIR/mass"
+    mkdir -p "$DOWNSTREAM_DIR/calcification"
+    mkdir -p "$DOWNSTREAM_DIR/density"
+    mkdir -p "$DOWNSTREAM_DIR/cancer"
     
-    if [ ! -f "$full_local" ]; then
-        echo "  Downloading: $local_path"
-        wget -q --show-progress -O "$full_local" "$HF_BASE/$hf_path" 2>/dev/null || {
-            echo "    WARNING: Failed to download $local_path (may not exist on HF)."
-            echo "    URL: $HF_BASE/$hf_path"
-            rm -f "$full_local"
-        }
-    else
-        echo "  Already exists: $local_path"
-    fi
-done
+    cp "$DOWNSTREAM_DIR/Models/Classifier/linear_probe/mass/"*.pth "$DOWNSTREAM_DIR/mass/" 2>/dev/null || true
+    cp "$DOWNSTREAM_DIR/Models/Classifier/linear_probe/calcification/"*.pth "$DOWNSTREAM_DIR/calcification/" 2>/dev/null || true
+    cp "$DOWNSTREAM_DIR/Models/Classifier/linear_probe/density/"*.pth "$DOWNSTREAM_DIR/density/" 2>/dev/null || true
+    cp "$DOWNSTREAM_DIR/Models/Classifier/linear_probe/cancer/"*.pth "$DOWNSTREAM_DIR/cancer/" 2>/dev/null || true
+    
+    echo "  Cleaning up temporary zips..."
+    rm -rf "$ZIP_PATH" "$DOWNSTREAM_DIR/classification" "$DOWNSTREAM_DIR/Models" "$DOWNSTREAM_DIR/detection" "$DOWNSTREAM_DIR/__MACOSX"
+else
+    echo "  Downstream checkpoints already exist, skipping."
+fi
 
 echo "  Downstream checkpoints done."
 

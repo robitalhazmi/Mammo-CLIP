@@ -305,6 +305,9 @@ def parse_args():
     parser.add_argument("--data-dir", default="/data/nas07_new/PersonalData/robit/Mammo-CLIP/data", type=str)
     parser.add_argument("--img-dir", default="vindr/images_png", type=str)
     
+    parser.add_argument("--evaluate_only", action="store_true", help="Skip training and only run evaluation")
+    parser.add_argument("--cocoop_chk_pt_path", type=str, default="", help="Path to trained cocoop_best.pth for evaluation")
+    
     # We now use two CSVs: one for prompts (train), one for labels (test)
     parser.add_argument("--prompts_csv", default="vindr/clip_vindr_final_prompts.csv", type=str)
     parser.add_argument("--labels_csv", default="vindr/vindr_detection_v1_folds.csv", type=str)
@@ -424,6 +427,28 @@ def main():
         return 0.5 * (1.0 + np.cos(np.pi * progress))
 
     scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda)
+
+    # Load trained CoCoOp weights if provided
+    if args.cocoop_chk_pt_path:
+        print(f"Loading trained CoCoOp weights from {args.cocoop_chk_pt_path}")
+        ckpt = torch.load(args.cocoop_chk_pt_path, map_location="cpu")
+        prompt_learner.load_state_dict(ckpt["prompt_learner"])
+
+    if args.evaluate_only:
+        print(f"\n{'='*60}")
+        print(f"Running Zero-Shot Evaluation ONLY for {args.label}")
+        print(f"{'='*60}\n")
+        
+        final_results = evaluate(model, test_loader, device, class_templates, n_cls)
+        metric_name = "accuracy" if args.label == "density" else "auc_roc"
+        print(f"Evaluation {metric_name}: {final_results[metric_name]:.4f}")
+        
+        results_df = pd.DataFrame({
+            "prediction": final_results["predictions"],
+            "label": final_results["labels"],
+        })
+        results_df.to_csv(output_path / f"cocoop_{args.label}_eval_predictions.csv", index=False)
+        return
 
     best_metric = 0.0
     best_epoch = -1

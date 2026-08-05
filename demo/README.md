@@ -1,13 +1,13 @@
-# Prompt-Guided MV VLM Demo
+# Mammo-CoCoOp Web Demo
 
-An interactive, web-based demonstration for **Prompt-Guided MV VLM**, a vision-language model tailored for mammogram analysis. This demo allows users to evaluate the model's capabilities in finding specific breast abnormalities (like Masses or Calcifications) using Zero-Shot Prediction and Linear Probing. 
+An interactive, web-based demonstration for **Mammo-CoCoOp**, a contrastive vision-language model tailored for mammogram analysis. This demo allows users to evaluate the model's capabilities in finding specific breast abnormalities (like Masses, Calcifications, or Malignancy) using Zero-Shot Prediction (via CoCoOp's Meta-Net) and Linear Probing. 
 
 The application features an intuitive UI that generates **Grad-CAM heatmaps** to visualize exactly where the model is focusing, alongside ground-truth bounding boxes for accurate performance evaluation.
 
 ## Features
 
-- **Prompt-Guided MV VLM (Zero-Shot)**: Leverage the power of Prompt-Guided MV VLM's vision-language embeddings to perform zero-shot classification using custom text prompts.
-- **Linear Probe**: Evaluate task-specific performance using pre-trained linear classifiers fine-tuned on Prompt-Guided MV VLM embeddings.
+- **Mammo-CoCoOp (Zero-Shot)**: Leverage the power of Mammo-CoCoOp's dynamically learned, image-conditional text prompts to perform highly accurate zero-shot classification.
+- **Linear Probe**: Evaluate task-specific performance using pre-trained linear classifiers fine-tuned on Mammo-CLIP's frozen image embeddings.
 - **Grad-CAM Interpretability**: Automatically generates heatmaps overlaid on the original mammograms, showing the regions that most strongly influenced the model's prediction.
 - **Ground Truth Validation**: Displays ground-truth bounding boxes perfectly aligned with the model's heatmaps, utilizing dynamic cropping and coordinate mapping from the VinDr metadata.
 - **Dynamic Preprocessing**: Automatically isolates the Breast Region of Interest (ROI) and normalizes uploaded or sampled images before inference.
@@ -68,7 +68,7 @@ Once the server starts, open your web browser and navigate to:
 
 ## Usage Guide
 
-1. **Select a Setting**: Choose between **Zero-shot** (Prompt-Guided MV VLM) or **Linear Probe**.
+1. **Select a Setting**: Choose between **Zero-shot** (Mammo-CoCoOp) or **Linear Probe**.
 2. **Select Target Label**: Choose the clinical finding you want the model to look for (e.g., Mass, Calcification, Malignancy).
 3. **Select an Image**: Pick one of the provided sample images from the dropdown menu, or upload your own mammogram.
 4. **Run Analysis**: Click the "Run Analysis" button. The model will process the image, predict the likelihood of the selected finding, and generate an interpretable Grad-CAM heatmap highlighting the suspected region!

@@ -47,10 +47,11 @@
 2. [Data Download](#data-download)
 3. [Mammo-CLIP Checkpoints](#mammo-clip-checkpoints)
 4. [CoCoOp Training](#cocoop-training)
-5. [Project Structure](#project-structure)
-6. [Citation](#citation)
-7. [License](#license)
-8. [Acknowledgements](#acknowledgements)
+5. [Web Demo](#web-demo)
+6. [Project Structure](#project-structure)
+7. [Citation](#citation)
+8. [License](#license)
+9. [Acknowledgements](#acknowledgements)
 
 ---
 
@@ -238,7 +239,15 @@ outputs/cocoop/{b5,b2}/{label}/
 
 ---
 
+## Web Demo
 
+An interactive, web-based demonstration for Mammo-CLIP and Mammo-CoCoOp is provided in the `demo/` subdirectory. 
+
+The demo features an intuitive UI that generates **Grad-CAM heatmaps** to visualize exactly where the model is focusing, alongside ground-truth bounding boxes for accurate performance evaluation. It supports Zero-Shot (Prompt-Guided MV VLM) and Linear Probe settings for tasks like Mass, Calcification, and Malignancy detection.
+
+To get started with the demo, please refer to the dedicated [demo/README.md](demo/README.md) file.
+
+---
 
 ## Project Structure
 

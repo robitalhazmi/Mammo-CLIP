@@ -46,11 +46,10 @@
 2. [Data Download](#data-download)
 3. [Mammo-CLIP Checkpoints](#mammo-clip-checkpoints)
 4. [CoCoOp Training](#cocoop-training)
-5. [Results](#results)
-6. [Project Structure](#project-structure)
-7. [Citation](#citation)
-8. [License](#license)
-9. [Acknowledgements](#acknowledgements)
+5. [Project Structure](#project-structure)
+6. [Citation](#citation)
+7. [License](#license)
+8. [Acknowledgements](#acknowledgements)
 
 ---
 
@@ -227,24 +226,7 @@ outputs/cocoop/{b5,b2}/{label}/
 
 ---
 
-## Results
 
-### Classification Performance on VinDr Dataset
-
-We compare CoCoOp prompt tuning against static zero-shot (ZS) and traditional downstream methods:
-
-| Label | Model | ZS (Static) | CoCoOp (Ours) | Linear Probe 100% | Fine-tune 100% |
-|-------|-------|:-----------:|:-------------:|:-----------------:|:--------------:|
-| Calcification | Mammo-CLIP B2 | 0.68 | — | 0.92 | 0.98 |
-| Calcification | Mammo-CLIP B5 | 0.62 | — | 0.96 | 0.98 |
-| Mass | Mammo-CLIP B2 | 0.58 | — | 0.86 | 0.85 |
-| Mass | Mammo-CLIP B5 | 0.76 | — | 0.86 | 0.88 |
-| Density | Mammo-CLIP B2 | 0.13 | — | 0.84 | 0.85 |
-| Density | Mammo-CLIP B5 | 0.15 | — | 0.86 | 0.88 |
-
-> **Note:** CoCoOp results will be populated after running the experiments. The expected outcome is substantial improvement over static zero-shot, since prompts are learned and image-conditional.
-
----
 
 ## Project Structure
 

@@ -31,26 +31,12 @@
 
 ### Architecture
 
-```
-Mammogram ──→ [Frozen Image Encoder] ──→ image features ──→ [Meta-Net] ──→ bias π
-                                             │                                │
-                                             ↓                                ↓
-                                     [Image Projection]              vₘ' = vₘ + π
-                                             │                                │
-                                             ↓                                ↓
-                                     image embedding          [CLS] v₁' v₂' ... vₘ' <class> [SEP]
-                                             │                                │
-                                             │                    [Frozen Text Encoder]
-                                             │                                │
-                                             ↓                                ↓
-                                    Cosine Similarity ←──────── text embedding
-                                             │
-                                             ↓
-                                    Cross-Entropy Loss
-```
+<p align="center">
+  <img src="assets/architecture.png" alt="Mammo-CoCoOp Architecture" width="800"/>
+</p>
 
-**Learnable**: Context vectors `v₁, v₂, ..., vₘ` + Meta-Net (`Linear → ReLU → Linear`)  
-**Frozen**: Image encoder, Text encoder, Projection heads, Logit scale
+**Learnable (🔥 Tuned):** Context vectors `v₁, v₂, ..., vₘ` + Meta-Net  
+**Frozen (❄️):** Image encoder, Text encoder, LLM  
 
 ---
 

@@ -160,6 +160,19 @@ bash src/scripts/run_cocoop_b2.sh 1 &
 wait
 ```
 
+### Evaluate Pre-Trained CoCoOp
+
+Once the model has been trained contrastively, you can run instant zero-shot evaluation without going through the training loop by using the `--evaluate_only` flag and providing the learned `cocoop_best.pth` checkpoint:
+
+```bash
+python src/codebase/train_cocoop.py \
+    --clip_chk_pt_path checkpoints/pretrained/b5-model-best-epoch-7.tar \
+    --label Mass \
+    --evaluate_only \
+    --cocoop_chk_pt_path outputs/cocoop/b5/Mass/checkpoints/cocoop_best.pth \
+    --output_path outputs/cocoop/b5/Mass
+```
+
 ### Command-Line Arguments
 
 | Argument | Default | Description |
@@ -174,6 +187,8 @@ wait
 | `--lr` | `0.002` | Learning rate (SGD) |
 | `--patience` | `10` | Early stopping patience (0 = disabled) |
 | `--data_frac` | `1.0` | Fraction of training data to use |
+| `--evaluate_only` | `False` | Skip training and only run zero-shot evaluation |
+| `--cocoop_chk_pt_path` | `""` | Path to trained `cocoop_best.pth` (required if `--evaluate_only`) |
 | `--prompts_csv` | `vindr/clip_vindr_final_prompts.csv` | CSV containing LLM descriptions for Contrastive Training |
 | `--labels_csv` | `vindr/vindr_detection_v1_folds.csv` | CSV containing ground-truth labels for Zero-Shot Evaluation |
 | `--output_path` | *required* | Output directory for checkpoints and results |

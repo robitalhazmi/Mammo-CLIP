@@ -178,17 +178,36 @@ wait
 | `--csv-file` | `vindr/vindr_detection_v1_folds.csv` | CSV annotation file |
 | `--output_path` | *required* | Output directory for checkpoints and results |
 
-### Custom Context Initialization
+### Context Initialization
 
-You can initialize context vectors with domain-specific phrases:
+By default, context vectors are randomly initialized. You can also initialize them with domain-specific phrases using `--ctx_init`.
+
+The descriptive visual text prompts used during Mammo-CLIP pre-training are available in [`clip_vindr_final_prompts.csv`](src/codebase/data_csv/clip_vindr_final_prompts.csv), which contains per-image radiology descriptions in two columns:
+
+| Column | Description | Example |
+|--------|-------------|---------|
+| `cc_prompt` | CC view description | *"In the CC view, heterogeneously dense fibroglandular tissue (ACR density C) is present with no discernible masses..."* |
+| `mlo_prompt` | MLO view description | *"In the MLO view, heterogeneously dense fibroglandular tissue (ACR density C) is present with no discernible masses..."* |
+
+These prompts serve as the default reference for domain-specific context initialization. For example:
 
 ```bash
+# Initialize with a CC-view prompt prefix
+python src/codebase/train_cocoop.py \
+    --clip_chk_pt_path checkpoints/pretrained/b5-model-best-epoch-7.tar \
+    --label Mass \
+    --ctx_init "in the cc view" \
+    --output_path outputs/cocoop/b5/Mass_cc_init
+
+# Initialize with a mammogram-specific phrase
 python src/codebase/train_cocoop.py \
     --clip_chk_pt_path checkpoints/pretrained/b5-model-best-epoch-7.tar \
     --label Mass \
     --ctx_init "a mammogram showing" \
     --output_path outputs/cocoop/b5/Mass_custom_init
 ```
+
+> **Note:** The `ctx_init` string is tokenized by Bio_ClinicalBERT and the resulting token embeddings are used to initialize the learnable context vectors. The number of context tokens (`--n_ctx`) is automatically set to match the tokenized length of the init string.
 
 ### Class Names
 

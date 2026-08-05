@@ -25,7 +25,7 @@
 **Mammo-CoCoOp** extends [Mammo-CLIP](https://github.com/batmanlab/Mammo-CLIP) (MICCAI 2024) with a contrastive learning adaptation of [Conditional Context Optimization (CoCoOp)](https://arxiv.org/abs/2203.05557) (CVPR 2022). Instead of using static zero-shot text prompts, Mammo-CoCoOp learns **image-conditional prompts** through a lightweight Meta-Net.
 
 ### Key Contributions
-- **Contrastive Fine-Tuning with LLMs**: Unlike standard CoCoOp which uses downstream classification (Cross-Entropy), Mammo-CoCoOp performs **Contrastive Learning (InfoNCE)**. It aligns each mammogram with its specific, highly-detailed LLM-generated radiology description (e.g., density and BI-RADS findings).
+- **Contrastive Fine-Tuning with MVS**: Unlike standard CoCoOp which uses downstream classification (Cross-Entropy), Mammo-CoCoOp performs **Contrastive Learning (InfoNCE)**. We adapted Mammo-CLIP's 6-way **Multi-View Supervision (MVS)** loss, strictly pairing CC and MLO views to extract view-invariant features. It aligns each mammogram with specific, highly-detailed LLM-generated radiology descriptions.
 - **Adapts CoCoOp to Bio_ClinicalBERT**: We adapt CoCoOp for Mammo-CLIP's Bio_ClinicalBERT text encoder by injecting learnable prompt embeddings via HuggingFace's `inputs_embeds` parameter.
 - **Zero-Shot Downstream Evaluation**: After the Meta-Net and Context Vectors are contrastively trained to align with detailed LLM descriptions, the model performs zero-shot classification on downstream tasks (Mass, Calcification, Density) using fixed, class-specific LLM templates.
 - **Fully frozen backbone**: Both the image encoder (EfficientNet B5/B2) and text encoder (Bio_ClinicalBERT) remain completely frozen. Only the context vectors and Meta-Net are trained (~100K parameters).
@@ -190,9 +190,14 @@ python src/codebase/train_cocoop.py \
 | `--data_frac` | `1.0` | Fraction of training data to use |
 | `--evaluate_only` | `False` | Skip training and only run zero-shot evaluation |
 | `--cocoop_chk_pt_path` | `""` | Path to trained `cocoop_best.pth` (required if `--evaluate_only`) |
+| `--i2i_weight` | `1.0` | Weight for Image-Image contrastive self-supervision |
+| `--t2t_weight` | `1.0` | Weight for Text-Text contrastive self-supervision |
 | `--prompts_csv` | `vindr/clip_vindr_final_prompts.csv` | CSV containing LLM descriptions for Contrastive Training |
 | `--labels_csv` | `vindr/vindr_detection_v1_folds.csv` | CSV containing ground-truth labels for Zero-Shot Evaluation |
 | `--output_path` | *required* | Output directory for checkpoints and results |
+
+> [!WARNING]
+> **Batch Size Memory:** Because Mammo-CoCoOp utilizes the 6-way MVS loss, it strictly processes pairs of images (both CC and MLO views simultaneously) for each sample. This effectively doubles the memory footprint during training. You may need to halve your `--batch-size` parameter compared to single-image models to avoid Out-Of-Memory (OOM) errors.
 
 ### Training Prompts (Contrastive Learning)
 

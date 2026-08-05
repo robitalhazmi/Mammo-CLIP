@@ -165,7 +165,7 @@ wait
 | Argument | Default | Description |
 |----------|---------|-------------|
 | `--clip_chk_pt_path` | *required* | Path to pre-trained Mammo-CLIP checkpoint (.tar) |
-| `--label` | `Mass` | Target label for zero-shot evaluation (`Mass`, `Suspicious_Calcification`, or `density`) |
+| `--label` | `Mass` | Target label for zero-shot evaluation (`Mass`, `Suspicious_Calcification`, `Malignancy`, or `density`) |
 | `--n_ctx` | `4` | Number of learnable context tokens |
 | `--ctx_init` | `""` | Context initialization string (empty = random init) |
 | `--meta_net_reduction` | `16` | Meta-Net bottleneck reduction factor |
@@ -193,6 +193,7 @@ During the evaluation loop, the model relies on the learned Meta-Net to dynamica
 |------|-----------------------------|-----------------------------|
 | **Mass** | *"A mammogram showing no discernible masses, calcifications, or architectural distortion, constituting a normal examination."* | *"A mammogram showing a discernible mass, requiring further clinical evaluation."* |
 | **Calcification** | *"A mammogram showing no discernible masses, calcifications, or architectural distortion, constituting a normal examination."* | *"A mammogram showing suspicious calcifications, requiring further clinical evaluation."* |
+| **Malignancy** | *"A mammogram showing no evidence of malignancy, consistent with benign or normal findings (BI-RADS 1 to 3)."* | *"A mammogram showing suspicious findings highly suggestive of malignancy, requiring further clinical evaluation (BI-RADS 4 or 5)."* |
 
 *(Density uses four distinct templates matching ACR density grades A through D).*
 

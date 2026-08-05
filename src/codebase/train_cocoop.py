@@ -51,6 +51,10 @@ LABEL_CLASSNAMES = {
         "A mammogram showing no discernible masses, calcifications, or architectural distortion, constituting a normal examination.",
         "A mammogram showing suspicious calcifications, requiring further clinical evaluation.",
     ],
+    "Malignancy": [
+        "A mammogram showing no evidence of malignancy, consistent with benign or normal findings (BI-RADS 1 to 3).",
+        "A mammogram showing suspicious findings highly suggestive of malignancy, requiring further clinical evaluation (BI-RADS 4 or 5).",
+    ],
     "density": [
         "A mammogram showing almost entirely fatty tissue (ACR density A).",
         "A mammogram showing scattered areas of fibroglandular density (ACR density B).",
@@ -162,7 +166,15 @@ class VinDrZeroShotTestDataset(Dataset):
         img = np.transpose(img, (2, 0, 1))
         img = torch.from_numpy(img).float()
 
-        label = int(row[self.label_col])
+        if self.label_col == "Malignancy":
+            birads_str = str(row.get("breast_birads", ""))
+            if "4" in birads_str or "5" in birads_str:
+                label = 1
+            else:
+                label = 0
+        else:
+            label = int(row[self.label_col])
+            
         return {"image": img, "label": label}
 
 
@@ -288,7 +300,7 @@ def parse_args():
     parser.add_argument("--clip_chk_pt_path", required=True, type=str)
     
     parser.add_argument("--label", default="Mass", type=str,
-                        choices=["Mass", "Suspicious_Calcification", "density"],
+                        choices=["Mass", "Suspicious_Calcification", "Malignancy", "density"],
                         help="Target label for zero-shot evaluation")
     parser.add_argument("--data-dir", default="/data/nas07_new/PersonalData/robit/Mammo-CLIP/data", type=str)
     parser.add_argument("--img-dir", default="vindr/images_png", type=str)

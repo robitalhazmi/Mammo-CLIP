@@ -15,17 +15,15 @@ EPOCHS=50
 LR=0.002
 N_CTX=4
 
-for LABEL in "Mass" "Suspicious_Calcification" "density"; do
+for LABEL in "Mass" "Suspicious_Calcification" "Malignancy" "density"; do
     echo "============================================"
     echo "Running CoCoOp B5 for ${LABEL}..."
     echo "============================================"
     python "${CODE_DIR}/train_cocoop.py" \
         --clip_chk_pt_path "${CHKPT}" \
-        --dataset ViNDr \
         --label "${LABEL}" \
         --data-dir "${BASE_DIR}/data" \
         --img-dir "vindr/images_png" \
-        --csv-file "vindr/vindr_detection_v1_folds.csv" \
         --n_ctx ${N_CTX} \
         --ctx_init "" \
         --batch-size ${BATCH_SIZE} \

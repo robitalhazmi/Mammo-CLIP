@@ -145,7 +145,7 @@ python src/codebase/train_cocoop.py \
 
 ### Run All Experiments
 
-Shell scripts are provided to train across all labels (Mass, Calcification, Density):
+Shell scripts are provided to train across all labels (Mass, Calcification, Malignancy, Density):
 
 ```bash
 # B5 backbone on GPU 0

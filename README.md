@@ -310,6 +310,13 @@ If you use this work, please cite both papers:
   pages     = {632--642},
 }
 
+@InProceedings{radford2021clip,
+  author    = {Radford, Alec and Kim, Jong Wook and Hallacy, Chris and Ramesh, Aditya and Goh, Gabriel and Agarwal, Sandhini and Sastry, Girish and Askell, Amanda and Mishkin, Pamela and Clark, Jack and Krueger, Gretchen and Sutskever, Ilya},
+  title     = {Learning Transferable Visual Models From Natural Language Supervision},
+  booktitle = {International Conference on Machine Learning (ICML)},
+  year      = {2021},
+}
+
 @InProceedings{zhou2022cocoop,
   author    = {Zhou, Kaiyang and Yang, Jingkang and Loy, Chen Change and Liu, Ziwei},
   title     = {Conditional Prompt Learning for Vision-Language Models},

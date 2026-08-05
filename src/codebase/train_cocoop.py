@@ -69,8 +69,8 @@ LABEL_CLASSNAMES = {
 # ============================================================
 class VinDrContrastiveTrainDataset(Dataset):
     """
-    Loads images and their unique LLM prompts for Contrastive Learning.
-    Uses `clip_vindr_final_prompts.csv`.
+    Loads paired CC and MLO images and their unique LLM prompts for MVS Contrastive Learning.
+    Uses `clip_vindr_final_prompts.csv`. Only includes breasts with both views available.
     """
     def __init__(self, df, data_dir, img_dir, transform=None, mean=0.3089279, std=0.25053555):
         self.data_dir = Path(data_dir)
@@ -79,39 +79,34 @@ class VinDrContrastiveTrainDataset(Dataset):
         self.mean = mean
         self.std = std
         
-        # Flatten the dataframe (unpack CC and MLO lists)
         self.samples = []
         for _, row in df.iterrows():
             study_id = str(row["patient_id"])
             
-            # CC images
-            if isinstance(row["CC"], str) and row["CC"] != "[]":
+            # Check if both views exist
+            if isinstance(row["CC"], str) and row["CC"] != "[]" and \
+               isinstance(row["MLO"], str) and row["MLO"] != "[]":
+               
                 cc_imgs = ast.literal_eval(row["CC"])
-                for img in cc_imgs:
-                    img_id = img.replace(".png", "")
-                    self.samples.append({
-                        "study_id": study_id,
-                        "image_id": img_id,
-                        "text": str(row["cc_prompt"])
-                    })
-                    
-            # MLO images
-            if isinstance(row["MLO"], str) and row["MLO"] != "[]":
                 mlo_imgs = ast.literal_eval(row["MLO"])
-                for img in mlo_imgs:
-                    img_id = img.replace(".png", "")
-                    self.samples.append({
-                        "study_id": study_id,
-                        "image_id": img_id,
-                        "text": str(row["mlo_prompt"])
-                    })
+                
+                # Pick the first image of each view
+                cc_img_id = cc_imgs[0].replace(".png", "")
+                mlo_img_id = mlo_imgs[0].replace(".png", "")
+                
+                self.samples.append({
+                    "study_id": study_id,
+                    "cc_image_id": cc_img_id,
+                    "mlo_image_id": mlo_img_id,
+                    "cc_text": str(row["cc_prompt"]),
+                    "mlo_text": str(row["mlo_prompt"])
+                })
 
     def __len__(self):
         return len(self.samples)
 
-    def __getitem__(self, idx):
-        sample = self.samples[idx]
-        img_path = self.data_dir / self.img_dir / sample["study_id"] / f"{sample['image_id']}.png"
+    def _load_and_transform(self, study_id, image_id):
+        img_path = self.data_dir / self.img_dir / study_id / f"{image_id}.png"
         
         img = np.array(Image.open(img_path).convert("RGB"))
         if self.transform:
@@ -124,9 +119,20 @@ class VinDrContrastiveTrainDataset(Dataset):
         img = (img - self.mean) / self.std
 
         img = np.transpose(img, (2, 0, 1))
-        img = torch.from_numpy(img).float()
+        return torch.from_numpy(img).float()
 
-        return {"image": img, "text": sample["text"]}
+    def __getitem__(self, idx):
+        sample = self.samples[idx]
+        
+        img_cc = self._load_and_transform(sample["study_id"], sample["cc_image_id"])
+        img_mlo = self._load_and_transform(sample["study_id"], sample["mlo_image_id"])
+
+        return {
+            "image_cc": img_cc,
+            "image_mlo": img_mlo,
+            "text_cc": sample["cc_text"],
+            "text_mlo": sample["mlo_text"]
+        }
 
 
 class VinDrZeroShotTestDataset(Dataset):
@@ -206,27 +212,49 @@ def seed_all(seed):
     torch.backends.cudnn.benchmark = False
 
 
-def train_one_epoch(model, loader, optimizer, scheduler, device, epoch, logger):
+def train_one_epoch(model, loader, optimizer, scheduler, device, epoch, logger, args):
     model.train()
     total_loss = 0.0
     n_batches = 0
 
     for batch_idx, batch in enumerate(loader):
-        images = batch["image"].to(device)
-        texts = batch["text"]  # list of strings (length B)
-        B = images.shape[0]
+        img_cc = batch["image_cc"].to(device)
+        img_mlo = batch["image_mlo"].to(device)
+        text_cc = batch["text_cc"]
+        text_mlo = batch["text_mlo"]
+        
+        B = img_cc.shape[0]
 
-        # Forward pass: Contrastive Mode (is_eval=False)
-        image_proj, text_proj, logit_scale = model(images, texts, is_eval=False)
-
-        # InfoNCE Loss
-        logits_per_image = logit_scale * image_proj @ text_proj.t()
-        logits_per_text = logits_per_image.t()
+        # 1. Forward passes for both views
+        img_cc_proj, txt_cc_proj, logit_scale = model(img_cc, text_cc, is_eval=False)
+        img_mlo_proj, txt_mlo_proj, _ = model(img_mlo, text_mlo, is_eval=False)
 
         labels = torch.arange(B, device=device, dtype=torch.long)
-        loss_i = F.cross_entropy(logits_per_image, labels)
-        loss_t = F.cross_entropy(logits_per_text, labels)
-        loss = (loss_i + loss_t) / 2.0
+        
+        def contrastive_loss(v1, v2):
+            logits = logit_scale * v1 @ v2.t()
+            loss_1 = F.cross_entropy(logits, labels)
+            loss_2 = F.cross_entropy(logits.t(), labels)
+            return (loss_1 + loss_2) / 2.0
+
+        # 2. Intra-view (Image-Text)
+        loss_i1_t1 = contrastive_loss(img_cc_proj, txt_cc_proj)
+        loss_i2_t2 = contrastive_loss(img_mlo_proj, txt_mlo_proj)
+
+        # 3. Inter-view (Image-Text)
+        loss_i1_t2 = contrastive_loss(img_cc_proj, txt_mlo_proj)
+        loss_i2_t1 = contrastive_loss(img_mlo_proj, txt_cc_proj)
+
+        # 4. Self-Supervision (Image-Image and Text-Text)
+        loss_i1_i2 = contrastive_loss(img_cc_proj, img_mlo_proj)
+        loss_t1_t2 = contrastive_loss(txt_cc_proj, txt_mlo_proj)
+
+        # 5. Combine MVS Loss
+        loss_i2t = (loss_i1_t1 + loss_i2_t2 + loss_i1_t2 + loss_i2_t1) / 4.0
+        loss_i2i = loss_i1_i2 / 2.0
+        loss_t2t = loss_t1_t2 / 2.0
+
+        loss = loss_i2t + (args.i2i_weight * loss_i2i) + (args.t2t_weight * loss_t2t)
 
         optimizer.zero_grad()
         loss.backward()
@@ -326,6 +354,10 @@ def parse_args():
     parser.add_argument("--warmup_epochs", default=1, type=int)
     parser.add_argument("--patience", default=10, type=int)
     parser.add_argument("--seed", default=42, type=int)
+
+    # MVS Loss weights
+    parser.add_argument("--i2i_weight", default=1.0, type=float, help="Weight for image-image contrastive loss")
+    parser.add_argument("--t2t_weight", default=1.0, type=float, help="Weight for text-text contrastive loss")
 
     parser.add_argument("--img-size", nargs=2, default=[1520, 912], type=int)
     parser.add_argument("--mean", default=0.3089279, type=float)
@@ -462,8 +494,8 @@ def main():
     for epoch in range(args.epochs):
         start_time = time.time()
 
-        # Train (InfoNCE)
-        avg_loss = train_one_epoch(model, train_loader, optimizer, scheduler, device, epoch, logger)
+        # Train (InfoNCE MVS Loss)
+        avg_loss = train_one_epoch(model, train_loader, optimizer, scheduler, device, epoch, logger, args)
 
         # Evaluate (Zero-Shot Classification)
         eval_results = evaluate(model, test_loader, device, class_templates, n_cls)
